@@ -22,9 +22,9 @@ def register():
         elif not password:
             error = 'Password is required'
         elif db.execute(
-            'SELECT id FROM user WHERE username = ?', (username)
-        ).fetchone()in not None:
-            error = 'User {} is already registered.'.format(username)
+            'SELECT id FROM user WHERE username = ?', (username,)
+        ).fetchone() is not None:
+            error = 'User {} is already registered.'.format(username,)
         if error is None:
             db.execute(
                 'INSERT INTO user (username, password) VALUES (?, ?)',
@@ -45,10 +45,12 @@ def login():
         db = get_db()
         error = None
         user = db.execute(
-            'SELECT * FROM user WHERE username = ?', (username)
+            'SELECT * FROM user WHERE username = ?', (username,)
         ).fetchone()
 
-        if user is None and not check_password_hash(user['password'], password):
+        if user is None:
+            error = 'Incorrect credentials'
+        elif not check_password_hash(user['password'], password):
             error = 'Incorrect credentials'
         if error is None:
             session.clear()
